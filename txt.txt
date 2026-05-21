@@ -1,0 +1,13 @@
+<div class="demo-hint">
+      <strong style="color:var(--accent)">Demo credentials</strong><br/>
+      Admin → admin@procuguard.com / admin123<br/>
+      User  → jane@company.com / user123<br/>
+      <em style="color:var(--text3)">Register creates a user account by default</em>
+    </div>
+
+
+    .demo-hint {
+        margin-top: 20px; padding: 12px 14px; background: var(--bg3);
+        border-radius: var(--radius); font-size: 11px; color: var(--text2); line-height: 1.8;
+        font-family: var(--mono);
+      }

@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ProcuGuard — Smart Procurement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- ══ AUTH PAGE ════════════════════════════════════════════ -->
+<div id="auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="icon-shield">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <h1>ProcuGuard</h1>
+        <span>Smart Procurement System</span>
+      </div>
+    </div>
+ 
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="auth-error" class="alert alert-error" style="display:none"></div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@company.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter') doLogin()" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()" id="login-btn">Sign In</button>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="your name" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" placeholder="you@company.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 6 characters" onkeydown="if(event.key==='Enter') doRegister()" />
+      </div>
+      <div class="form-group">
+
+        <label style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          cursor:pointer;
+          text-transform:none;
+          letter-spacing:0;
+        ">
+      
+          <input
+            type="checkbox"
+            id="is-vendor"
+            onchange="toggleVendorFields()"
+            style="
+              width:auto;
+              margin:0;
+            "
+          >
+      
+          Are you a vendor?
+      
+        </label>
+      
+      </div>
+      
+      
+      <div id="vendor-fields" style="display:none">
+      
+        <div class="form-group">
+          <label>Business Name</label>
+      
+          <input
+            type="text"
+            id="vendor-business-name"
+            placeholder="Your company/business name"
+          >
+        </div>
+      
+        <div class="form-group">
+
+          <label>Business Type</label>
+        
+          <select id="vendor-business-type">
+        
+            <option value="">
+              Select Business Category
+            </option>
+        
+            <option value="Electronics">
+              Electronics
+            </option>
+        
+            <option value="Furniture">
+              Furniture
+            </option>
+        
+            <option value="Stationery">
+              Stationery
+            </option>
+        
+            <option value="IT Services">
+              IT Services
+            </option>
+        
+            <option value="Office Supplies">
+              Office Supplies
+            </option>
+        
+            <option value="Networking">
+              Networking
+            </option>
+        
+            <option value="Software">
+              Software
+            </option>
+        
+            <option value="Industrial Equipment">
+              Industrial Equipment
+            </option>
+        
+          </select>
+        
+        </div>
+      
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doRegister()" id="reg-btn">Create Account</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ APP SHELL ════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <span class="sidebar-title">ProcuGuard</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+
+      <div class="nav-section-label" id="nav-section-requests">Procurement</div>
+
+      <!-- Vendor nav -->
+
+        <button
+        class="nav-item vendor-only"
+        data-page="vendor-dashboard"
+        onclick="navigate('vendor-dashboard')"
+        style="display:none"
+        >
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 3h18v18H3z"/>
+          <path d="M9 9h6v6H9z"/>
+        </svg>
+
+        Vendor Dashboard
+
+        </button>
+
+
+        <button
+        class="nav-item vendor-only"
+        data-page="my-products"
+        onclick="navigate('my-products')"
+        style="display:none"
+        >
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6 2l1.5 4h9L18 2"/>
+          <path d="M3 6h18l-2 14H5L3 6z"/>
+        </svg>
+
+        My Products
+
+        </button>
+
+
+        <button
+        class="nav-item vendor-only"
+        data-page="add-product"
+        onclick="navigate('add-product')"
+        style="display:none"
+        >
+
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v8"/>
+          <path d="M8 12h8"/>
+        </svg>
+
+        Add Product
+
+        </button>
+
+      <!-- User nav -->
+      <button class="nav-item user-only" data-page="my-requests" onclick="navigate('my-requests')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        My Requests <span class="badge" id="pending-badge" style="display:none"></span>
+      </button>
+      <!-- <button class="nav-item user-only" data-page="new-request" onclick="navigate('new-request')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        New Request
+      </button> -->
+      <button class="nav-item user-only" data-page="categories" onclick="navigate('categories')">
+        📦 Categories
+      </button>
+      
+      <button class="nav-item user-only" data-page="vendors-market" onclick="navigate('vendors-market')">
+        🏪 Vendors Market
+      </button>
+      
+      <button class="nav-item user-only" data-page="products-market" onclick="navigate('products-market')">
+        🛍 Products
+      </button>
+
+      <!-- Admin nav -->
+      <button class="nav-item admin-only" data-page="all-requests" onclick="navigate('all-requests')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        All Requests <span class="badge" id="admin-pending-badge" style="display:none"></span>
+      </button>
+
+      <button class="nav-item" data-page="vendors" onclick="navigate('vendors')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Vendors
+      </button>
+
+      <button class="nav-item admin-only" data-page="users" onclick="navigate('users')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user-info">
+        <p class="sidebar-user-name" id="sidebar-username">—</p>
+        <p class="sidebar-user-role" id="sidebar-role">—</p>
+      </div>
+      <button class="sidebar-logout" onclick="doLogout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="main-header">
+      <div>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- ── VENDOR DASHBOARD ── -->
+    <div class="page" id="page-vendor-dashboard">
+
+  <div class="stats-grid" id="vendor-stats-grid"></div>
+
+  <div class="card">
+
+    <div class="card-header">
+      <span class="card-title">
+        Recent Products
+      </span>
+    </div>
+
+    <div id="vendor-recent-products"></div>
+
+  </div>
+
+</div>
+
+
+<!-- ── ADD PRODUCT ── -->
+<div class="page" id="page-add-product">
+
+  <div class="card" style="max-width:650px">
+
+    <h3 class="card-title mb-20">
+      Add New Product
+    </h3>
+
+    <div id="product-alert"></div>
+
+    <div class="form-group">
+
+      <label>Product Name</label>
+
+      <input
+        type="text"
+        id="product-name"
+        placeholder="Dell Latitude 5420"
+      >
+
+    </div>
+
+    <div class="grid-2">
+
+      <div class="form-group">
+
+        <label>Category</label>
+
+        <input
+          type="text"
+          id="product-category"
+          placeholder="Electronics"
+        >
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Price</label>
+
+        <input
+          type="number"
+          id="product-price"
+          placeholder="54000"
+        >
+
+      </div>
+
+    </div>
+
+    <div class="grid-2">
+
+      <div class="form-group">
+
+        <label>Stock</label>
+
+        <input
+          type="number"
+          id="product-stock"
+          placeholder="12"
+        >
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Image URL</label>
+
+        <input
+          type="text"
+          id="product-image"
+          placeholder="https://..."
+        >
+
+      </div>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Description</label>
+
+      <textarea
+        id="product-description"
+        placeholder="Product details..."
+      ></textarea>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Features (comma separated)</label>
+
+      <input
+        type="text"
+        id="product-features"
+        placeholder="Intel i5, 16GB RAM, SSD"
+      >
+
+    </div>
+
+    <button
+      class="btn btn-primary"
+      onclick="addProduct()"
+      id="add-product-btn"
+    >
+      Add Product
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- ── MY PRODUCTS ── -->
+<div class="page" id="page-my-products">
+
+  <div
+    id="my-products-grid"
+    class="vendor-grid"
+  ></div>
+
+</div>
+
+      <!-- ── DASHBOARD ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Requests</span>
+          </div>
+          <div class="table-wrap">
+            <table id="recent-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th id="dash-user-col">Requester</th>
+                  <th>Vendor</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY REQUESTS ── -->
+      <div class="page" id="page-my-requests">
+        <div class="filter-tabs" id="my-filter-tabs">
+          <button class="filter-tab active" onclick="filterRequests('my','all',this)">All</button>
+          <button class="filter-tab" onclick="filterRequests('my','pending',this)">Pending</button>
+          <button class="filter-tab" onclick="filterRequests('my','under-review',this)">Under Review</button>
+
+          <button class="filter-tab" onclick="filterRequests('my','approved',this)">Approved</button>
+          
+          <button class="filter-tab" onclick="filterRequests('my','ordered',this)">Ordered</button>
+          
+          <button class="filter-tab" onclick="filterRequests('my','delivered',this)">Delivered</button>
+          
+          <button class="filter-tab" onclick="filterRequests('my','completed',this)">Completed</button>
+          
+          <button class="filter-tab" onclick="filterRequests('my','rejected',this)">Rejected</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Vendor</th>
+                  <th>Notes</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="my-requests-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── NEW REQUEST ── -->
+      <div class="page" id="page-new-request">
+        <div class="card" style="max-width:500px">
+          <h3 class="card-title mb-20">Submit Procurement Request</h3>
+          <div id="req-alert"></div>
+          <div class="form-group">
+            <label>Item Name</label>
+            <input type="text" id="req-item" placeholder="e.g. Laptops, Office Chairs…" />
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" id="req-qty" min="1" value="1" />
+            </div>
+            <div class="form-group">
+              <label>Vendor</label>
+              <select id="req-vendor"></select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes (optional)</label>
+            <textarea id="req-notes" placeholder="Additional details or requirements…"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="submitRequest()" id="req-submit-btn">Submit Request</button>
+        </div>
+      </div>
+
+      <!-- ── ALL REQUESTS (admin) ── -->
+      <div class="page" id="page-all-requests">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterRequests('admin','all',this)">All</button>
+          <button class="filter-tab" onclick="filterRequests('admin','pending',this)">Pending</button>
+          <button class="filter-tab" onclick="filterRequests('admin','under-review',this)">Under Review</button>
+
+          <button class="filter-tab" onclick="filterRequests('admin','approved',this)">Approved</button>
+          
+          <button class="filter-tab" onclick="filterRequests('admin','ordered',this)">Ordered</button>
+          
+          <button class="filter-tab" onclick="filterRequests('admin','delivered',this)">Delivered</button>
+          
+          <button class="filter-tab" onclick="filterRequests('admin','completed',this)">Completed</button>
+          
+          <button class="filter-tab" onclick="filterRequests('admin','rejected',this)">Rejected</button>
+        </div>
+          <div style="
+              display:flex;
+              gap:12px;
+              margin-bottom:16px;
+              flex-wrap:wrap;
+            ">
+
+        <input
+          type="text"
+          id="request-search"
+          placeholder="Search item name..."
+          oninput="applyRequestFilters()"
+          style="
+            flex:1;
+            min-width:220px;
+            background:var(--bg2);
+            color:var(--text);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:10px 14px;
+            outline:none;
+          "
+        >
+
+        <select
+          id="request-sort"
+          onchange="applyRequestFilters()"
+          style="
+            background:var(--bg2);
+            color:var(--text);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:10px 14px;
+            outline:none;
+            cursor:pointer;
+          "
+        >
+
+          <option value="newest">
+            Newest
+          </option>
+
+          <option value="oldest">
+            Oldest
+          </option>
+
+          <option value="quantity-high">
+            Quantity High
+          </option>
+
+          <option value="quantity-low">
+            Quantity Low
+          </option>
+
+        </select>
+
+      </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Requester</th>
+                  <th>Vendor</th>
+                  <th>Notes</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-requests-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VENDORS ── -->
+      <div class="page" id="page-vendors">
+        <div id="vendor-stats" class="stats-grid mb-20" style="display:none"></div>
+        <div id="add-vendor-section" class="admin-only mb-20" style="display:none">
+          <div class="card" style="max-width:500px">
+            <h3 class="card-title mb-16">Add New Vendor</h3>
+            <div id="vendor-alert"></div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" id="v-name" placeholder="Acme Corp" />
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="v-email" placeholder="contact@acme.com" />
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>Category</label>
+                <input type="text" id="v-category" placeholder="Electronics, Furniture…" />
+              </div>
+              <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="v-phone" placeholder="+91 9999000000" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Rating: <span id="v-rating-val">4.0</span></label>
+              <input type="range" id="v-rating" min="1" max="5" step="0.1" value="4.0"
+                oninput="document.getElementById('v-rating-val').textContent=parseFloat(this.value).toFixed(1)" />
+            </div>
+            <button class="btn btn-primary" onclick="addVendor()" id="add-vendor-btn">Add Vendor</button>
+          </div>
+          <div style="height:20px"></div>
+        </div>
+        <div class="flex justify-between items-center mb-16">
+          <h3 style="font-size:14px;font-weight:600">All Vendors</h3>
+          <button class="btn btn-secondary btn-sm admin-only" id="toggle-add-vendor" onclick="toggleAddVendor()" style="display:none">+ Add Vendor</button>
+        </div>
+        <div class="vendor-grid" id="vendors-grid"></div>
+      </div>
+
+      <!-- ── USERS (admin) ── -->
+      <div class="page" id="page-users">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+<!-- ── CATEGORIES ── -->
+<div class="page" id="page-categories">
+
+  <div class="vendor-grid">
+
+    <div class="vendor-card" onclick="openCategory('Electronics')">
+      <h3>💻 Electronics</h3>
+      <p class="text-muted">Laptops, monitors, devices</p>
+    </div>
+
+    <div class="vendor-card" onclick="openCategory('Furniture')">
+      <h3>🪑 Furniture</h3>
+      <p class="text-muted">Office chairs, desks</p>
+    </div>
+
+    <div class="vendor-card" onclick="openCategory('Stationery')">
+      <h3>📝 Stationery</h3>
+      <p class="text-muted">Pens, notebooks, supplies</p>
+    </div>
+
+    <div class="vendor-card" onclick="openCategory('IT Services')">
+      <h3>🖥 IT Services</h3>
+      <p class="text-muted">Software & services</p>
+    </div>
+
+  </div>
+
+</div>
+<!-- ── VENDORS MARKET ── -->
+<div class="page" id="page-vendors-market">
+
+  <div class="flex justify-between items-center mb-16">
+
+    <h3 id="selected-category-title">
+      Vendors
+    </h3>
+
+  </div>
+
+  <div class="vendor-grid" id="vendors-market-grid"></div>
+
+</div>
+<!-- ── PRODUCTS MARKET ── -->
+<div class="page" id="page-products-market">
+
+  <div class="flex justify-between items-center mb-16">
+
+    <h3 id="selected-vendor-title">
+      Products
+    </h3>
+
+  </div>
+
+  <div
+  id="products-market-grid"
+  style="
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:20px;
+    width:100%;
+  "
+></div>
+
+</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
