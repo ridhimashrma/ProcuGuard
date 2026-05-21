@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 
 const Request = require('../models/Request');
+const Vendor = require('../models/Vendor');
 const Notification = require('../models/Notification');
 const sendEmail = require('../utils/sendEmail');
+
 
 const { protect, adminOnly } = require('../middleware/auth');
 
@@ -450,6 +452,226 @@ router.get('/stats/overview', protect, async (req, res) => {
   }
 
 });
+// ==========================================
+// GET VENDOR REQUESTS
+// ==========================================
+router.get('/vendor/my-requests', protect, async (req, res) => {
 
+  try {
+
+    // ONLY VENDORS
+    if (req.user.role !== 'vendor') {
+
+      return res.status(403).json({
+        message: 'Vendor access only'
+      });
+
+    }
+
+    // FIND VENDOR PROFILE
+    const vendorProfile = await Vendor.findOne({
+      user: req.user._id
+    });
+
+    if (!vendorProfile) {
+
+      return res.status(404).json({
+        message: 'Vendor profile not found'
+      });
+
+    }
+
+    // FETCH REQUESTS
+    const requests = await Request.find({
+
+      vendor: vendorProfile._id
+
+    })
+
+    .populate('user', 'name email')
+
+    .populate('vendor', 'name email category')
+
+    .sort({
+      createdAt: -1
+    });
+
+    res.json(requests);
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: err.message
+    });
+
+  }
+
+});
+
+
+
+// ==========================================
+// VENDOR UPDATE REQUEST STATUS
+// ==========================================
+router.put(
+  '/vendor/:id/status',
+  protect,
+  async (req, res) => {
+
+    try {
+
+      // ONLY VENDORS
+      if (req.user.role !== 'vendor') {
+
+        return res.status(403).json({
+          message: 'Vendor access only'
+        });
+
+      }
+
+      const { status } = req.body;
+
+      // ALLOWED STATUSES
+      const allowedStatuses = [
+
+        'approved',
+
+        'rejected'
+
+      ];
+
+      if (!allowedStatuses.includes(status)) {
+
+        return res.status(400).json({
+          message: 'Invalid status'
+        });
+
+      }
+
+      // FIND REQUEST
+      const request = await Request.findById(
+        req.params.id
+      );
+
+      if (!request) {
+
+        return res.status(404).json({
+          message: 'Request not found'
+        });
+
+      }
+
+      // FIND VENDOR PROFILE
+      const vendorProfile =
+        await Vendor.findOne({
+          user: req.user._id
+        });
+
+      if (!vendorProfile) {
+
+        return res.status(404).json({
+          message: 'Vendor profile not found'
+        });
+
+      }
+
+      // SECURITY CHECK
+      if (
+
+        request.vendor.toString() !==
+        vendorProfile._id.toString()
+
+      ) {
+
+        return res.status(403).json({
+          message: 'Unauthorized'
+        });
+
+      }
+
+      // UPDATE STATUS
+      request.status = status;
+
+      request.timeline.push({
+
+        status,
+
+        changedAt: new Date()
+
+      });
+
+      await request.save();
+
+      // POPULATE UPDATED REQUEST
+      const updatedRequest =
+        await Request.findById(request._id)
+
+        .populate('user', 'name email')
+
+        .populate(
+          'vendor',
+          'name email category'
+        );
+
+      // CREATE NOTIFICATION
+      await Notification.create({
+
+        user: request.user,
+
+        message:
+          `Your request for "${request.itemName}" was ${status} by vendor`
+
+      });
+
+      // EMAIL USER
+      await sendEmail({
+
+        to: updatedRequest.user.email,
+
+        subject:
+          `Request ${status.toUpperCase()}`,
+
+        html: `
+
+          <div style="font-family:Arial">
+
+            <h2>
+              Request ${status.toUpperCase()}
+            </h2>
+
+            <p>
+              Hello ${updatedRequest.user.name},
+            </p>
+
+            <p>
+              Your request for
+              <strong>
+                ${updatedRequest.itemName}
+              </strong>
+
+              has been
+              <strong>
+                ${status}
+              </strong>.
+            </p>
+
+          </div>
+
+        `
+
+      });
+
+      res.json(updatedRequest);
+
+    } catch (err) {
+
+      res.status(500).json({
+        message: err.message
+      });
+
+    }
+
+  }
+);
 
 module.exports = router;
